@@ -7,7 +7,7 @@ import java.util.UUID;
 import sage.networking.server.GameConnectionServer;
 import sage.networking.server.IClientInfo;
 
-public class GameServerTCP extends GameConnectionServer {
+public class GameServerTCP extends GameConnectionServer<UUID> {
 
 	public GameServerTCP(String localPort)
 			throws IOException {
@@ -68,7 +68,10 @@ public class GameServerTCP extends GameConnectionServer {
 			 }
 			 if(msgTokens[0].compareTo("dsfr") == 0) // receive “details for”
 			 { // etc….. }
-				 
+				 UUID clientID = UUID.fromString(msgTokens[1]);
+				 UUID remID = UUID.fromString(msgTokens[2]);
+				 String[] pos = {msgTokens[3], msgTokens[4], msgTokens[5]};
+				 sendDetailsMessage(clientID, remID, pos);
 			 }
 			 if(msgTokens[0].compareTo("move") == 0) // receive “move”
 			 { // etc….. }
@@ -95,19 +98,34 @@ public class GameServerTCP extends GameConnectionServer {
 		  } 
 	  }
 	 
-	 public void sendDetailsMsg(UUID clientID, UUID remoteId, String[] position)
+	 public void sendDetailsMessage(UUID remoteId, UUID clientID, String[] position)
 	 { // etc….. 
-		 
+		 String message = new String("dsfr," + clientID.toString());
+		  message += "," + position[0];
+		  message += "," + position[1];
+		  message += "," + position[2];
+		  try {
+			sendPacket(message, remoteId);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	 }
 	 
 	 public void sendWantsDetailsMessages(UUID clientID)
 	 { // etc….. 
-		 
+		 String message = new String("wsds," + clientID.toString());
+		 try {
+			forwardPacketToAll(message, clientID);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	 }
 	 
 	 public void sendMoveMessages(UUID clientID, String[] pos)
 	 { // etc….. }
-		 String message = new String("create," + clientID.toString());
+		 String message = new String("move," + clientID.toString());
 			message += "," + pos[0]+"," + pos[1] + "," + pos[2];
 			try {
 				forwardPacketToAll(message, clientID);
@@ -120,11 +138,13 @@ public class GameServerTCP extends GameConnectionServer {
 	 public void sendByeMessages(UUID clientID)
 	 { // etc….. 
 		 try {
-			forwardPacketToAll(new String("bye" + clientID.toString()), clientID);
+	            String msg = new String("bye," + clientID.toString());
+	            forwardPacketToAll(msg, clientID);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		removeClient(clientID);
 	 }
 
 
