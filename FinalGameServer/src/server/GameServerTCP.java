@@ -98,7 +98,7 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		  } 
 	  }
 	 
-	 public void sendDetailsMessage(UUID remoteId, UUID clientID, String[] position)
+	 public void sendDetailsMessage(UUID clientID, UUID remoteId, String[] position)
 	 { // etc….. 
 		 String message = new String("dsfr," + clientID.toString());
 		  message += "," + position[0];
