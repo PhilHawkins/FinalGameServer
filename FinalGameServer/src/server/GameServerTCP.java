@@ -1,5 +1,7 @@
 package server;
 
+import graphicslib3D.Point3D;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -8,11 +10,16 @@ import sage.networking.server.GameConnectionServer;
 import sage.networking.server.IClientInfo;
 
 public class GameServerTCP extends GameConnectionServer<UUID> {
+	private NPCController NPCCont;
 
 	public GameServerTCP(String localPort)
 			throws IOException {
 		super(Integer.parseInt(localPort), ProtocolType.TCP);
 		// TODO Auto-generated constructor stub
+	}
+	
+	public void setNPCController(NPCController cont){
+		NPCCont = cont;
 	}
 	
 	 public void acceptClient(IClientInfo ci, Object o) // override
@@ -36,7 +43,10 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		  { 
 			  String message = new String("join,");
 			  if(success) 
+			  {
 				  message += "success";
+				  sendNPCDetails(clientID);
+			  }
 			  else 
 				  message += "failure";
 			  sendPacket(message, clientID);
@@ -47,7 +57,9 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		  } 
 	  }
 	 
-	 public void processPacket(Object o, InetAddress senderIP, int sndPort)
+	 
+
+	public void processPacket(Object o, InetAddress senderIP, int sndPort)
 	 {
 		 String message = (String) o;
 		 String[] msgTokens = message.split(",");
@@ -137,15 +149,48 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 
 	 public void sendByeMessages(UUID clientID)
 	 { // etc….. 
-		 try {
-	            String msg = new String("bye," + clientID.toString());
-	            forwardPacketToAll(msg, clientID);
+		try {
+            String msg = new String("bye," + clientID.toString());
+            forwardPacketToAll(msg, clientID);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		removeClient(clientID);
 	 }
+
+	public void sendNPCinfo(Point3D first, Point3D second) {
+		Point3D firstNPCPoint = NPCCont.getFirstPos();
+		Point3D secondNPCPoint = NPCCont.getSecondPos();
+		
+		 String message = new String("mnpc,");
+		 message += firstNPCPoint.getX() + "," + firstNPCPoint.getY() + "," + firstNPCPoint.getZ();
+		 message += "," + secondNPCPoint.getX() + "," + secondNPCPoint.getY() + "," + secondNPCPoint.getZ();
+		 
+		 try{
+			 sendPacketToAll(message);
+		 }
+		 catch(IOException e){
+			 e.printStackTrace();
+		 }
+		
+	}
+	
+	private void sendNPCDetails(UUID clientID) {
+		Point3D firstNPCPoint = NPCCont.getFirstPos();
+		Point3D secondNPCPoint = NPCCont.getSecondPos();
+		
+		 String message = new String("npcds,");
+		 message += firstNPCPoint.getX() + "," + firstNPCPoint.getY() + "," + firstNPCPoint.getZ();
+		 message += "," + secondNPCPoint.getX() + "," + secondNPCPoint.getY() + "," + secondNPCPoint.getZ();
+		 
+		 try{
+			 sendPacket(message, clientID);
+		 }
+		 catch(IOException e){
+			 e.printStackTrace();
+		 }
+	}
 
 
 }
