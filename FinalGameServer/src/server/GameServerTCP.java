@@ -75,7 +75,8 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 			 { // format: create,localid,x,y,z
 				 UUID clientID = UUID.fromString(msgTokens[1]);
 				 String[] pos = {msgTokens[2], msgTokens[3], msgTokens[4]};
-				 sendCreateMessages(clientID, pos);
+				 String planet = msgTokens[5];
+				 sendCreateMessages(clientID, pos, planet);
 				 sendWantsDetailsMessages(clientID);
 			 }
 			 if(msgTokens[0].compareTo("dsfr") == 0) // receive “details for”
@@ -83,7 +84,8 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 				 UUID clientID = UUID.fromString(msgTokens[1]);
 				 UUID remID = UUID.fromString(msgTokens[2]);
 				 String[] pos = {msgTokens[3], msgTokens[4], msgTokens[5]};
-				 sendDetailsMessage(clientID, remID, pos);
+				 String planet = msgTokens[6];
+				 sendDetailsMessage(clientID, remID, pos, planet);
 			 }
 			 if(msgTokens[0].compareTo("move") == 0) // receive “move”
 			 { // etc….. }
@@ -95,7 +97,7 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		 }
 	 }
 	 
-	 public void sendCreateMessages(UUID clientID, String[] position)
+	 public void sendCreateMessages(UUID clientID, String[] position, String planet)
 	 { // format: create, remoteId, x, y, z
 		  try
 		  { 
@@ -103,6 +105,7 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 			  message += "," + position[0];
 			  message += "," + position[1];
 			  message += "," + position[2];
+			  message += "," + planet;
 			  forwardPacketToAll(message, clientID);
 		  }
 		  catch (IOException e) { 
@@ -110,12 +113,13 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		  } 
 	  }
 	 
-	 public void sendDetailsMessage(UUID clientID, UUID remoteId, String[] position)
+	 public void sendDetailsMessage(UUID clientID, UUID remoteId, String[] position, String planet)
 	 { // etc….. 
 		 String message = new String("dsfr," + clientID.toString());
 		  message += "," + position[0];
 		  message += "," + position[1];
 		  message += "," + position[2];
+		  message += "," + planet;
 		  try {
 			sendPacket(message, remoteId);
 		} catch (IOException e) {
